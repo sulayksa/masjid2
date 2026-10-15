@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FBF7F8">
+<title>تذكير المحاضرات النسائية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500&family=Reem+Kufi:wght@600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF7F8; --surface:#FFFFFF; --text:#3A2A35; --muted:#8C7A85;
+  --primary:#8A4F6E; --soft:#F3E8EF; --gold:#C9A46A; --line:#EADFE6;
+  --today:#B5577A; --today-bg:#FBE6EE; --wa:#1FA855;
+  --head:'Reem Kufi', Tahoma, sans-serif;
+  --body:'Readex Pro', Tahoma, sans-serif;
+  --shadow:0 1px 2px rgba(58,42,53,.04), 0 4px 14px rgba(58,42,53,.04);
+  color-scheme: light;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:15px;line-height:1.6;min-height:100vh}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+a{color:inherit}
+.wrap{max-width:680px;margin:0 auto;padding:0 16px 40px}
+
+/* ── الهيدر ── */
+header{position:relative;overflow:hidden;background:var(--surface);border-bottom:2px solid var(--gold);margin:0 -16px;padding:28px 20px 22px;text-align:center}
+.star{position:absolute;top:10px;left:10px;width:64px;height:64px;opacity:.08;color:var(--primary)}
+.mihrab{position:relative;display:inline-block;padding:30px 28px 12px;margin-bottom:10px}
+.mihrab svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.kicker{position:relative;font-size:12px;color:var(--muted);letter-spacing:.3px}
+h1{position:relative;font-family:var(--head);font-weight:600;color:var(--primary);font-size:26px;line-height:1.35;margin-top:2px}
+.lede{color:var(--muted);font-size:13.5px;max-width:420px;margin:0 auto 14px}
+.chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;background:var(--soft);font-size:12.5px;color:var(--primary);font-weight:500}
+.chip b{font-weight:500;background:var(--gold);color:#fff;border-radius:999px;min-width:22px;padding:0 6px;font-size:12px;line-height:20px;text-align:center}
+.chip.today{background:var(--today-bg);color:var(--today)}
+.chip.today b{background:var(--today)}
+
+/* ── التبويبات والبحث والفلتر ── */
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--soft);padding:5px;border-radius:999px;margin:18px 0 12px}
+.tabs button{padding:9px 6px;border-radius:999px;font-weight:500;color:var(--primary);font-size:14.5px}
+.tabs button[aria-selected="true"]{background:var(--primary);color:#fff;box-shadow:var(--shadow)}
+.search{position:relative;margin-bottom:10px}
+.search input{width:100%;font:inherit;font-size:16px;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:11px 44px 11px 16px;outline:none}
+.search input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--soft)}
+.search svg{position:absolute;right:16px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--muted)}
+.filters{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:6px;scrollbar-width:none}
+.filters::-webkit-scrollbar{display:none}
+.filters button{flex:none;padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:13.5px;color:var(--muted)}
+.filters button[aria-pressed="true"]{background:var(--soft);border-color:var(--primary);color:var(--primary);font-weight:500}
+
+/* ── التنبيهات ── */
+.errors{background:var(--today-bg);border:1px solid #F0C6D5;color:#8E2F55;border-radius:16px;padding:12px 16px;margin:12px 0;font-size:13.5px}
+.errors strong{display:block;font-family:var(--head);font-weight:600;margin-bottom:4px}
+.errors ul{padding-right:18px}
+
+/* ── المجموعات ── */
+.group{margin-top:20px}
+.ghead{display:flex;align-items:center;gap:10px;margin:0 4px 8px}
+.ghead h2{font-family:var(--head);font-weight:600;font-size:17px;color:var(--primary);white-space:nowrap}
+.ghead .sub{font-size:12.5px;color:var(--muted);white-space:nowrap}
+.ghead .fade{flex:1;height:1px;background:linear-gradient(to left,var(--line),transparent)}
+.ghead .count{font-size:12px;background:var(--gold);color:#fff;border-radius:999px;padding:0 8px;line-height:20px}
+.group.is-today .ghead h2{color:var(--today)}
+.group.is-today .list{border-color:#F3CADA;background:linear-gradient(var(--today-bg),var(--today-bg)) top/100% 3px no-repeat,var(--surface)}
+.group.is-today .ghead .count{background:var(--today)}
+.list{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+.row{display:flex;align-items:center;gap:12px;width:100%;text-align:right;padding:12px 14px;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row:hover,.row:focus-visible{background:var(--soft);outline:none}
+.arch{position:relative;flex:none;width:34px;height:40px;display:grid;place-items:center;padding-top:6px;font-size:13px;font-weight:500;color:var(--primary)}
+.arch svg{position:absolute;inset:0;width:100%;height:100%}
+.arch span{position:relative}
+.main{flex:1;min-width:0}
+.name{font-weight:500;font-size:15px;line-height:1.45}
+.meta{font-size:13px;color:var(--muted);line-height:1.5;overflow:hidden;text-overflow:ellipsis}
+.meta.title{color:var(--text);opacity:.85}
+.time{flex:none;font-size:12.5px;color:var(--primary);background:var(--soft);border-radius:999px;padding:2px 10px;white-space:nowrap}
+.note{display:inline-block;margin-top:3px;font-size:11.5px;color:#fff;background:var(--today);border-radius:999px;padding:0 9px;line-height:20px}
+.empty{color:var(--muted);text-align:center;padding:36px 16px;font-size:14px}
+
+/* المساجد */
+.mrow{display:flex;gap:12px;width:100%;text-align:right;padding:13px 14px;border-top:1px solid var(--line);align-items:flex-start}
+.mrow:first-child{border-top:0}
+.mrow:hover,.mrow:focus-visible{background:var(--soft);outline:none}
+.contact{display:flex;gap:8px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.contact .num{direction:ltr;unicode-bidi:isolate;color:var(--text);opacity:.8}
+.nextb{display:inline-block;margin-top:6px;font-size:12px;border-radius:999px;padding:1px 10px;background:var(--soft);color:var(--primary)}
+.nextb.none{background:#F5F1F3;color:var(--muted)}
+.nextb.today{background:var(--today-bg);color:var(--today)}
+.nonum{font-size:12.5px;color:var(--today)}
+
+footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:32px}
+
+/* ── النافذة السفلية ── */
+.backdrop{position:fixed;inset:0;background:rgba(58,42,53,.32);opacity:0;pointer-events:none;transition:opacity .2s}
+.backdrop.open{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:680px;max-height:92vh;overflow-y:auto;background:var(--surface);border-radius:22px 22px 0 0;border-top:3px solid var(--gold);padding:18px 18px calc(18px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .26s cubic-bezier(.2,.8,.2,1);box-shadow:0 -8px 30px rgba(58,42,53,.12)}
+.sheet.open{transform:none}
+.sheet .x{position:absolute;top:12px;left:12px;width:34px;height:34px;border-radius:999px;background:var(--soft);color:var(--primary);font-size:20px;line-height:34px}
+.shead{display:flex;gap:12px;align-items:center;padding-left:40px;margin-bottom:14px}
+.shead h3{font-family:var(--head);font-weight:600;font-size:19px;color:var(--primary);line-height:1.35}
+.shead .meta{white-space:normal}
+.label{font-size:12.5px;color:var(--muted);margin:12px 2px 6px}
+.pills{display:flex;gap:6px;flex-wrap:wrap}
+.pills button{padding:6px 13px;border-radius:999px;border:1px solid var(--line);font-size:13.5px;color:var(--muted);background:var(--surface)}
+.pills button[aria-pressed="true"]{border-color:var(--primary);background:var(--soft);color:var(--primary);font-weight:500}
+.pills button:disabled{opacity:.4;cursor:not-allowed}
+.card{background:var(--soft);border-radius:16px;padding:12px 14px}
+.card .when{font-family:var(--head);font-weight:600;color:var(--primary);font-size:15px}
+.card .when.today{color:var(--today)}
+.card dl{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font-size:13.5px;margin-top:6px}
+.card dt{color:var(--muted)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px}
+.seg button{padding:9px 6px;border-radius:999px;border:1px solid var(--line);font-size:13.5px;color:var(--muted)}
+.seg button[aria-pressed="true"]{border-color:var(--primary);background:var(--primary);color:#fff}
+.seg button:disabled{opacity:.4;cursor:not-allowed}
+.preview{white-space:pre-wrap;background:#FDFBFC;border:1px solid var(--line);border-radius:16px;padding:12px 14px;font-size:13.5px;line-height:1.75;margin-top:6px}
+.send{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:14px;padding:14px;border-radius:999px;background:var(--wa);color:#fff;font-weight:500;font-size:16px;text-decoration:none}
+.send svg{width:20px;height:20px}
+.send.off{background:#CFC3CA;pointer-events:none}
+.plain{display:block;text-align:center;margin-top:10px;font-size:13px;color:var(--muted)}
+.plain:hover{color:var(--primary)}
+.warn{background:var(--today-bg);color:var(--today);border-radius:16px;padding:10px 14px;font-size:13.5px;margin-top:12px}
+.copy{display:block;width:100%;margin-top:10px;padding:11px;border-radius:999px;border:1px solid var(--primary);color:var(--primary);font-weight:500}
+body.lock{overflow:hidden}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <svg class="star" viewBox="0 0 100 100" aria-hidden="true"><g fill="currentColor"><rect x="20" y="20" width="60" height="60"/><rect x="20" y="20" width="60" height="60" transform="rotate(45 50 50)"/></g></svg>
+  <div class="mihrab">
+    <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M2 100 V46 C2 22 30 8 50 0 C70 8 98 22 98 46 V100" fill="none" stroke="#C9A46A" stroke-width="1.2" vector-effect="non-scaling-stroke"/></svg>
+    <div class="kicker">دليل التواصل والمحاضرات</div>
+    <h1>تذكير المحاضرات النسائية</h1>
+  </div>
+  <p class="lede">اضغط على أي محاضرة أو مسجد، وتطلع لك رسالة التذكير جاهزة للإرسال في الواتساب.</p>
+  <div class="chips" id="chips"></div>
+</header>
+
+<div class="tabs" role="tablist">
+  <button role="tab" id="tab-lec" aria-selected="true">المحاضرات القادمة</button>
+  <button role="tab" id="tab-mos" aria-selected="false">المساجد</button>
+</div>
+
+<div class="search">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+  <input id="q" type="search" placeholder="ابحث: مسجد، داعية، عنوان، اسم، رقم" autocomplete="off">
+</div>
+<div class="filters" id="filters"></div>
+
+<main id="view"></main>
+
+<footer>المحاضرات التي مضى تاريخها تختفي تلقائيًا</footer>
+</div>
+
+<div class="backdrop" id="backdrop"></div>
+<section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-hidden="true"></section>
+
+<script src="lectures.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════
+   قائمة المساجد وأرقامها
+   كل سطر: [اسم المسجد, الحي, [[الصفة, الاسم, الرقم], ...]]
+   • الصفة والاسم يجوز يكونان فاضيين "".
+   • الرقم يبدأ بـ05.
+   • المسجد اللي ما له رقم بعد: اترك القائمة فاضية [] — يظهر بالموقع
+     بدون زر إرسال، وتقدر تنسخ الرسالة.
+   • رقم المسجد في الموقع = ترتيبه هنا.
+   ═══════════════════════════════════════════════════════════ */
+const data=[
+  // ── حي الفيحاء ──
+  ["جامع الحمادي","الفيحاء",[["","","0502423553"]]],
+  ["جامع الذياب","الفيحاء",[["","أم تركي","0554218377"]]],
+  ["جامع عكاشة","الفيحاء",[["","","0555400124"]]],
+  ["جامع عثمان بن عفان","الفيحاء",[["","","0555423231"]]],
+  ["جامع حنين","الفيحاء",[["","أم عادل","0505296285"]]],
+  ["مسجد الإحسان","الفيحاء",[["","مريم","0542999359"]]],
+  ["مسجد صالح الفوزان","الفيحاء",[["","أم أنس","0505185278"]]],
+  ["مسجد العواد","الفيحاء",[["","","0541707060"]]],
+  ["جامع زيد بن ثابت","الفيحاء",[["","","0556444202"]]],
+  ["جامع حصة البداح","الفيحاء",[["","أرام","0508488211"]]],
+  // ── حي السعادة ──
+  ["مسجد السندي","السعادة",[["","","0530557216"]]],
+  ["جامع أحمد بن حنبل","السعادة",[["","أم علي","0505299674"]]],
+  ["جامع عايض المتعب","السعادة",[["","نورا","0500081728"]]],
+  ["مسجد أبي بكر","السعادة",[["","","0545459539"]]],
+  ["جامع أم المؤمنين","السعادة",[["","أروى","0540069954"]]],
+  ["جامع عبدالرحمن المنصور","السعادة",[["","","0539390227"]]],
+  ["جامع ابن ماجه","السعادة",[["","أمل المكي","0504201190"]]],
+  // ── حي الجزيرة ──
+  ["مسجد سليمان الجوير","الجزيرة",[["","سعاد","0555174626"]]],
+  ["جامع الفدا","الجزيرة",[["","أم عبدالله","0566476644"]]],
+  ["مسجد جعفر الطيار","الجزيرة",[["","","0568227737"]]],
+  ["مسجد الوالدين","الجزيرة",[["","","0559855539"]]],
+  ["جامع الفاروق","الجزيرة",[["","","0504191610"]]],
+  ["مسجد بن مهدي","الجزيرة",[["","","0500800421"]]],
+  ["جامع التوحيد","الجزيرة",[["","أم عبدالله","0542316951"]]],
+  ["جامع عقيل الراجحي","الجزيرة",[["","أم وسام","0554895185"]]],
+  ["مسجد بن جبرين","الجزيرة",[["","منى","0554122144"]]]
+];
+
+/* ترتيب الأحياء في الصفحة — أي حي جديد ينضاف هنا */
+const order=["الفيحاء","السعادة","الجزيرة",""];
+
+/* أسماء بديلة: الاسم المكتوب في ملف المحاضرات ← الاسم في القائمة */
+const aliases={
+  "جامع عقيل":"جامع عقيل الراجحي",
+  "مسجد الجوير":"مسجد سليمان الجوير",
+  "جامع الجوير":"مسجد سليمان الجوير",
+  "جامع المنصور":"جامع عبدالرحمن المنصور",
+  "جامع المتعب":"جامع عايض المتعب",
+  "مسجد السنيدي":"مسجد السندي",
+  "جامع حصه البداح":"جامع حصة البداح",
+  "مسجد الفوزان":"مسجد صالح الفوزان"
+};
+
+/* نص احتياطي للرسائل إذا ما انقرأ lectures.js */
+const fallbackMessages={
+قبل:`السلام عليكم ورحمة الله وبركاته
+نذكّركم بمحاضرة نسائية [متى] بإذن الله:
+
+📖 [العنوان]
+🎙 [الداعية]
+🗓 [التاريخ] [الوقت]
+📍 [المسجد] (مصلى النساء)
+
+نرجو التكرّم بنشرها لجماعة المسجد لحثّ النساء على الحضور.
+جزاكم الله خيرًا.`,
+يوم:`السلام عليكم ورحمة الله وبركاته
+نذكّركم بمحاضرة نسائية اليوم بإذن الله:
+
+📖 [العنوان]
+🎙 [الداعية]
+🗓 [التاريخ] [الوقت]
+📍 [المسجد] (مصلى النساء)
+
+نرجو التكرّم بنشرها لجماعة المسجد لحثّ النساء على الحضور.
+جزاكم الله خيرًا.`
+};
+
+/* ═══════════════ المنطق — ما يحتاج تعديل ═══════════════ */
+(function(){
+const DAY=864e5;
+const AR="٠١٢٣٤٥٦٧٨٩";
+const ar=s=>String(s).replace(/[0-9]/g,d=>AR[d]);
+const lat=s=>String(s).replace(/[٠-٩]/g,d=>AR.indexOf(d)).replace(/[۰-۹]/g,d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d));
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const HMONTHS=["محرم","صفر","ربيع الأول","ربيع الآخر","جمادى الأولى","جمادى الآخرة","رجب","شعبان","رمضان","شوال","ذو القعدة","ذو الحجة"];
+const WDAYS=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
+const PRAYERS=["الفجر","الظهر","العصر","المغرب","العشاء"];
+
+function norm(s){
+  return String(s??"")
+    .replace(/رضي\s*الله\s*عن(ها|ه|هم)/g,"")
+    .replace(/[ً-ْٰـ]/g,"")
+    .replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي")
+    .replace(/(^|\s)بن(?=\s|$)/g,"$1ابن")
+    .replace(/\s+/g," ").trim();
+}
+
+/* المساجد */
+const mosques=data.map((r,i)=>({n:i+1,name:r[0],hood:r[1]||"",contacts:(r[2]||[]).filter(c=>c&&c[2]).map(c=>({role:c[0]||"",name:c[1]||"",phone:lat(c[2]).replace(/\D/g,"")})),lectures:[]}));
+const byName=new Map();
+mosques.forEach(m=>byName.set(norm(m.name),m));
+Object.entries(aliases).forEach(([a,t])=>{const m=byName.get(norm(t));if(m&&!byName.has(norm(a)))byName.set(norm(a),m);});
+
+/* اليوم بتوقيت الرياض */
+const todayStr=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Riyadh",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+const [ty,tm,td]=todayStr.split("-").map(Number);
+const today=Date.UTC(ty,tm-1,td);
+
+/* جدول هجري ← ميلادي بتقويم أم القرى */
+const errors=[];
+const hijri=new Map();
+try{
+  const f=new Intl.DateTimeFormat("en-u-ca-islamic-umalqura-nu-latn",{timeZone:"UTC",day:"numeric",month:"numeric",year:"numeric"});
+  if(f.resolvedOptions().calendar!=="islamic-umalqura") throw 0;
+  for(let t=Date.UTC(2025,5,1);t<=Date.UTC(2029,11,31);t+=DAY){
+    const p={};f.formatToParts(new Date(t)).forEach(x=>p[x.type]=x.value);
+    hijri.set(`${parseInt(p.day)}/${parseInt(p.month)}/${parseInt(p.year)}`,t);
+  }
+}catch(e){errors.push("المتصفح ما يدعم تقويم أم القرى، حدّث المتصفح أو جرّب Chrome/Safari.");}
+
+function parseHijri(s){
+  const parts=lat(s).split(/[\/\-\.\\]/).map(x=>x.trim()).filter(Boolean);
+  if(parts.length<2||parts.length>3||parts.some(x=>!/^\d+$/.test(x)))return null;
+  const d=+parts[0],m=+parts[1],y=parts[2]?+parts[2]:1448;
+  const t=hijri.get(`${d}/${m}/${y}`);
+  return t===undefined?null:{t,d,m,y};
+}
+
+function timeText(v){
+  const s=String(v??"").trim();
+  if(!s)return {short:"المغرب",long:"بعد صلاة المغرب"};
+  const l=lat(s);
+  if(/^\d/.test(l)){
+    const hm=l.replace(/\s*(م|ص|مساء|مساءً|صباحا|صباحًا|pm|am)\.?$/i,"").trim();
+    const suf=/(ص|صباح|am)/i.test(l.slice(hm.length))?"ص":"م";
+    const t=ar(hm)+" "+suf;
+    return {short:t,long:"الساعة "+t};
+  }
+  const p=s.replace(/^(بعد\s*)?(صلاة\s*)?/,"").trim();
+  if(PRAYERS.includes(p)||PRAYERS.map(norm).includes(norm(p))){
+    const name=PRAYERS.find(x=>norm(x)===norm(p));
+    return {short:name,long:"بعد صلاة "+name};
+  }
+  return {short:s,long:s};
+}
+
+function whenText(n,inMsg){
+  if(n===0)return "اليوم";
+  if(n===1)return "غدًا";
+  if(n===2)return inMsg?"بعد غدٍ":"بعد غد";
+  if(n<=10)return `بعد ${ar(n)} أيام`;
+  return `بعد ${ar(n)} يومًا`;
+}
+
+/* قراءة المحاضرات */
+const raw=window.المحاضرات;
+const msgs=(window.الرسائل&&typeof window.الرسائل.قبل==="string"&&typeof window.الرسائل.يوم==="string")?window.الرسائل:fallbackMessages;
+const lectures=[];
+if(!Array.isArray(raw)){
+  errors.push("ملف المحاضرات lectures.js ما انقرأ: إما مو مرفوع جنب index.html، أو فيه فاصلة أو علامة تنصيص ناقصة. افتحه وتأكد من آخر تعديل.");
+}else{
+  raw.forEach((L,i)=>{
+    const no=`المحاضرة رقم ${ar(i+1)}`;
+    if(!L||typeof L!=="object"){errors.push(`${no}: مكتوبة بشكل غير صحيح.`);return;}
+    const label=L.المسجد?` (${esc(L.المسجد)} · ${esc(L.التاريخ||"")})`:"";
+    if(!String(L.المسجد||"").trim()){errors.push(`${no}${label}: ناقصها اسم المسجد.`);return;}
+    if(!String(L.التاريخ||"").trim()){errors.push(`${no}${label}: ناقصها التاريخ.`);return;}
+    const m=byName.get(norm(L.المسجد));
+    if(!m){errors.push(`${no}${label}: اسم المسجد غير موجود في القائمة.`);return;}
+    const h=parseHijri(L.التاريخ);
+    if(!h){errors.push(`${no}${label}: التاريخ غير مفهوم، اكتبه بالشكل 7/5/1448.`);return;}
+    const days=Math.round((h.t-today)/DAY);
+    if(days<0)return;
+    const wd=WDAYS[new Date(h.t).getUTCDay()];
+    const lec={i,m,days,t:h.t,wd,
+      hday:`${ar(h.d)} ${HMONTHS[h.m-1]}`,
+      hfull:`${ar(h.d)}/${ar(h.m)}/${ar(h.y)}`,
+      time:timeText(L.الوقت),
+      speaker:String(L.الداعية||"").trim(),
+      title:String(L.العنوان||"").trim(),
+      note:String(L.ملاحظة||"").trim()};
+    lectures.push(lec);m.lectures.push(lec);
+  });
+}
+lectures.sort((a,b)=>a.t-b.t||a.m.n-b.m.n||a.i-b.i);
+mosques.forEach(m=>m.lectures.sort((a,b)=>a.t-b.t||a.i-b.i));
+
+/* الرسالة */
+function buildMessage(lec,type){
+  const tpl=type==="يوم"?msgs.يوم:msgs.قبل;
+  const vals={
+    "متى":type==="يوم"?"اليوم":whenText(lec.days,true),
+    "العنوان":lec.title,"الداعية":lec.speaker,
+    "التاريخ":`يوم ${lec.wd} بتاريخ ${lec.hday}`,
+    "الوقت":lec.time.long,"المسجد":lec.m.name};
+  let lines=tpl.replace(/\r/g,"").split("\n").filter(line=>!((line.includes("[العنوان]")&&!lec.title)||(line.includes("[الداعية]")&&!lec.speaker)));
+  let out=lines.map(line=>line.replace(/\[(متى|العنوان|الداعية|التاريخ|الوقت|المسجد)\]/g,(_,k)=>vals[k])).join("\n");
+  if(lec.note){const k=out.indexOf("\n");out=k<0?out+"\nتنبيه: "+lec.note:out.slice(0,k)+"\nتنبيه: "+lec.note+out.slice(k);}
+  return out;
+}
+const waLink=(phone,text)=>`https://wa.me/966${phone.replace(/^0/,"")}`+(text?`?text=${encodeURIComponent(text)}`:"");
+
+/* الحالة */
+const state={tab:"lec",hood:"الكل",q:""};
+const hoods=order.filter(h=>h&&mosques.some(m=>m.hood===h)).concat([...new Set(mosques.map(m=>m.hood))].filter(h=>h&&!order.includes(h)));
+const $=id=>document.getElementById(id);
+const archSvg=`<svg viewBox="0 0 34 40" aria-hidden="true"><path d="M1 40V17C1 9 9 4 17 1C25 4 33 9 33 17V40Z" fill="#F3E8EF"/></svg>`;
+const arch=n=>`<span class="arch">${archSvg}<span>${ar(n)}</span></span>`;
+
+/* الشارات */
+const todayCount=lectures.filter(l=>l.days===0).length;
+$("chips").innerHTML=`<span class="chip"><b>${ar(mosques.length)}</b> مسجد</span><span class="chip"><b>${ar(lectures.length)}</b> محاضرة قادمة</span>`+(todayCount?`<span class="chip today"><b>${ar(todayCount)}</b> اليوم</span>`:"");
+
+/* الفلتر */
+function renderFilters(){
+  $("filters").innerHTML=["الكل",...hoods].map(h=>`<button data-h="${esc(h)}" aria-pressed="${state.hood===h}">${h==="الكل"?"الكل":"حي "+esc(h)}</button>`).join("");
+}
+$("filters").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;state.hood=b.dataset.h;renderFilters();render();});
+
+function matches(text){
+  if(!state.q)return true;
+  const q=norm(lat(state.q)).replace(/\s+/g," ");
+  const qd=lat(state.q).replace(/\D/g,"");
+  const t=norm(lat(text));
+  if(t.includes(q))return true;
+  return qd.length>=3&&t.replace(/\D/g,"").includes(qd);
+}
+const mosqueText=m=>[m.name,...m.contacts.flatMap(c=>[c.role,c.name,c.phone])].join(" ");
+const lecText=l=>[mosqueText(l.m),l.speaker,l.title,l.note].join(" ");
+
+function render(){
+  const v=$("view");
+  let html=errors.length&&state.tab==="lec"?`<div class="errors" role="alert"><strong>تنبيه: فيه محاضرات ما ظهرت</strong><ul>${errors.map(e=>`<li>${e}</li>`).join("")}</ul></div>`:"";
+  const inHood=m=>state.hood==="الكل"||m.hood===state.hood;
+  if(state.tab==="lec"){
+    const list=lectures.filter(l=>inHood(l.m)&&matches(lecText(l)));
+    const groups=[];
+    list.forEach(l=>{let g=groups[groups.length-1];if(!g||g.days!==l.days){g={days:l.days,items:[],l};groups.push(g);}g.items.push(l);});
+    html+=groups.map(g=>`<section class="group${g.days===0?" is-today":""}">
+      <div class="ghead"><h2>${whenText(g.days)}</h2><span class="sub">${g.l.wd} · ${g.l.hday}</span><span class="fade"></span><span class="count">${ar(g.items.length)}</span></div>
+      <div class="list">${g.items.map(l=>`<button class="row" data-lec="${l.i}">${arch(l.m.n)}
+        <span class="main"><span class="name">${esc(l.m.name)}</span>
+          <span class="meta title" style="display:block">${l.title?esc(l.title):"<span style='color:var(--muted)'>العنوان لم يُحدد</span>"}</span>
+          <span class="meta" style="display:block">${l.speaker?esc(l.speaker):"الداعية لم تُحدد"}${l.m.contacts.length?"":" · <span class='nonum'>بدون رقم</span>"}</span>
+          ${l.note?`<span class="note">${esc(l.note)}</span>`:""}</span>
+        <span class="time">${esc(l.time.short)}</span></button>`).join("")}</div></section>`).join("");
+    if(!list.length)html+=`<p class="empty">${state.q?"ما فيه نتائج للبحث.":"لا توجد محاضرات قادمة."}</p>`;
+  }else{
+    const sections=(state.hood==="الكل"?hoods.concat(mosques.some(m=>!m.hood)?[""]:[]):[state.hood]).map(h=>({h,items:mosques.filter(m=>m.hood===h&&(matches(mosqueText(m))||m.lectures.some(l=>matches(l.speaker+" "+l.title))))})).filter(s=>s.items.length);
+    html+=sections.map(s=>`<section class="group"><div class="ghead"><h2>${s.h?"حي "+esc(s.h):"بدون حي"}</h2><span class="fade"></span><span class="count">${ar(s.items.length)}</span></div>
+      <div class="list">${s.items.map(m=>{const nx=m.lectures[0];return `<button class="mrow" data-m="${m.n}">${arch(m.n)}
+        <span class="main"><span class="name" style="display:block">${esc(m.name)}</span>
+        ${m.contacts.length?m.contacts.map(c=>`<span class="contact">${c.role?`<span>${esc(c.role)}</span>`:""}${c.name?`<span>${esc(c.name)}</span>`:""}<span class="num">${esc(c.phone)}</span></span>`).join(""):`<span class="nonum">لا يوجد رقم تواصل</span>`}
+        <span class="nextb ${nx?(nx.days===0?"today":""):"none"}">${nx?(nx.days===0?"المحاضرة القادمة اليوم":"المحاضرة القادمة "+whenText(nx.days)):"لا توجد محاضرات قادمة"}</span></span></button>`;}).join("")}</div></section>`).join("");
+    if(!sections.length)html+=`<p class="empty">ما فيه نتائج للبحث.</p>`;
+  }
+  v.innerHTML=html;
+}
+
+/* التبويبات والبحث */
+function setTab(t){state.tab=t;$("tab-lec").setAttribute("aria-selected",t==="lec");$("tab-mos").setAttribute("aria-selected",t==="mos");render();}
+$("tab-lec").onclick=()=>setTab("lec");
+$("tab-mos").onclick=()=>setTab("mos");
+$("q").addEventListener("input",e=>{state.q=e.target.value.trim();render();});
+
+/* النافذة */
+const sheet=$("sheet"),bd=$("backdrop");
+let S=null;
+function openSheet(m,lec,fromMosque){
+  S={m,lec:lec||m.lectures[0]||null,fromMosque,contact:0,type:null};
+  S.type=S.lec&&S.lec.days===0?"يوم":"قبل";
+  drawSheet();
+  sheet.classList.add("open");bd.classList.add("open");sheet.setAttribute("aria-hidden","false");document.body.classList.add("lock");
+  setTimeout(()=>sheet.querySelector(".x")?.focus(),50);
+}
+function closeSheet(){sheet.classList.remove("open");bd.classList.remove("open");sheet.setAttribute("aria-hidden","true");document.body.classList.remove("lock");S=null;}
+function drawSheet(){
+  const {m,lec}=S,c=m.contacts[S.contact];
+  const who=c?[c.role,c.name].filter(Boolean).join(" ")||"جهة التواصل":"";
+  let h=`<button class="x" aria-label="إغلاق">×</button>
+  <div class="shead">${arch(m.n)}<div><h3>${esc(m.name)}</h3><div class="meta">${m.hood?"حي "+esc(m.hood):""}${c?` · ${esc(who)} · <span class="num" style="direction:ltr;unicode-bidi:isolate">${esc(c.phone)}</span>`:""}</div></div></div>`;
+  if(m.contacts.length>1)h+=`<div class="label">أرسل إلى</div><div class="pills" data-k="contact">${m.contacts.map((x,i)=>`<button data-v="${i}" aria-pressed="${i===S.contact}">${esc([x.role,x.name].filter(Boolean).join(" ")||x.phone)}</button>`).join("")}</div>`;
+  if(!lec){
+    h+=`<div class="card" style="margin-top:4px"><div class="when" style="color:var(--muted)">لا توجد محاضرات قادمة</div></div>`;
+    h+=c?`<a class="send" href="${waLink(c.phone)}" target="_blank" rel="noopener">${waIcon}فتح المحادثة في الواتساب</a>`:`<div class="warn">لا يوجد رقم تواصل لهذا المسجد.</div>`;
+    sheet.innerHTML=h;return;
+  }
+  if(S.fromMosque&&m.lectures.length>1)h+=`<div class="label">المحاضرة</div><div class="pills" data-k="lec">${m.lectures.map(l=>`<button data-v="${l.i}" aria-pressed="${l===lec}">${whenText(l.days)} · ${l.hday}</button>`).join("")}</div>`;
+  h+=`<div class="card" style="margin-top:${S.fromMosque&&m.lectures.length>1?10:4}px">
+    <div class="when ${lec.days===0?"today":""}">${whenText(lec.days)}</div>
+    <dl><dt>التاريخ</dt><dd>${lec.wd} ${lec.hday} <span style="color:var(--muted)">(${lec.hfull})</span></dd>
+    <dt>العنوان</dt><dd>${lec.title?esc(lec.title):"<span style='color:var(--muted)'>لم يُحدد</span>"}</dd>
+    <dt>الداعية</dt><dd>${lec.speaker?esc(lec.speaker):"<span style='color:var(--muted)'>لم تُحدد</span>"}</dd>
+    <dt>الوقت</dt><dd>${esc(lec.time.long)}</dd>
+    ${lec.note?`<dt>ملاحظة</dt><dd><span class="note" style="margin:0">${esc(lec.note)}</span></dd>`:""}</dl></div>`;
+  h+=`<div class="seg" data-k="type"><button data-v="قبل" aria-pressed="${S.type==="قبل"}" ${lec.days===0?"disabled":""}>تذكير قبل المحاضرة</button><button data-v="يوم" aria-pressed="${S.type==="يوم"}">تذكير يوم المحاضرة</button></div>`;
+  const msg=buildMessage(lec,S.type);
+  h+=`<div class="label">معاينة الرسالة</div><div class="preview">${esc(msg)}</div>`;
+  if(c){
+    h+=`<a class="send" href="${waLink(c.phone,msg)}" target="_blank" rel="noopener">${waIcon}إرسال في الواتساب</a>
+    <a class="plain" href="${waLink(c.phone)}" target="_blank" rel="noopener">فتح المحادثة بدون رسالة</a>`;
+  }else{
+    h+=`<div class="warn">لا يوجد رقم تواصل لهذا المسجد. أضف الرقم في قائمة المساجد داخل index.html، أو انسخ الرسالة وأرسلها يدويًا.</div>
+    <button class="copy" data-copy>نسخ الرسالة</button>`;
+  }
+  sheet.innerHTML=h;
+}
+const waIcon=`<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.9 11.9 0 0 0 4.6 4c1.7.7 2.3.8 3.2.7.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>`;
+
+sheet.addEventListener("click",e=>{
+  if(!S)return;
+  if(e.target.closest(".x")){closeSheet();return;}
+  if(e.target.closest("[data-copy]")){
+    const b=e.target.closest("[data-copy]");const txt=buildMessage(S.lec,S.type);
+    (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>{b.textContent="تم النسخ ✓";},()=>{b.textContent="ما قدرت أنسخ، انسخها من المعاينة";});
+    return;
+  }
+  const b=e.target.closest("[data-v]");if(!b||b.disabled)return;
+  const k=b.parentElement.dataset.k,v=b.dataset.v;
+  if(k==="contact")S.contact=+v;
+  if(k==="type")S.type=v;
+  if(k==="lec"){S.lec=S.m.lectures.find(l=>l.i===+v);S.type=S.lec.days===0?"يوم":"قبل";}
+  drawSheet();
+});
+bd.addEventListener("click",closeSheet);
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&S)closeSheet();});
+$("view").addEventListener("click",e=>{
+  const r=e.target.closest("[data-lec]");
+  if(r){const l=lectures.find(x=>x.i===+r.dataset.lec);openSheet(l.m,l,false);return;}
+  const mr=e.target.closest("[data-m]");
+  if(mr){openSheet(mosques[+mr.dataset.m-1],null,true);}
+});
+
+renderFilters();render();
+})();
+</script>
+</body>
+</html>
