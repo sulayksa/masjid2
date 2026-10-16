@@ -350,6 +350,8 @@ if(!Array.isArray(raw)){
     if(!h){errors.push(`${no}${label}: التاريخ غير مفهوم، اكتبه بالشكل 7/5/1448.`);return;}
     const days=Math.round((h.t-today)/DAY);
     if(days<0)return;
+    // المحاضرة اللي ما لها عنوان أو داعية ما تظهر لين تنكتب بياناتها
+    if(!String(L.العنوان||"").trim()||!String(L.الداعية||"").trim())return;
     const wd=WDAYS[new Date(h.t).getUTCDay()];
     const lec={i,m,days,t:h.t,wd,
       hday:`${ar(h.d)} ${HMONTHS[h.m-1]}`,
