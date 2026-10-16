@@ -122,6 +122,17 @@ footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:32px}
 .warn{background:var(--today-bg);color:var(--today);border-radius:16px;padding:10px 14px;font-size:13.5px;margin-top:12px}
 .copy{display:block;width:100%;margin-top:10px;padding:12px;border-radius:16px;border:1px solid var(--primary);color:var(--primary);font-weight:500}
 body.lock{overflow:hidden}
+.tcol{flex:none;display:flex;flex-direction:column;align-items:center;gap:4px}
+.hasimg{width:16px;height:16px;color:var(--gold)}
+.design{display:block;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:var(--soft);max-width:260px;margin:0 auto}
+.design img{display:block;width:100%;height:auto;aspect-ratio:3/4}
+button.send{border:0;cursor:pointer;font-family:inherit}
+.send.alt{background:var(--surface);color:var(--wa);border:1.5px solid var(--wa);margin-top:10px;font-size:15px;padding:12px}
+.hint{font-size:12.5px;color:var(--muted);text-align:center;margin-top:8px;line-height:1.7}
+.hint .num{direction:ltr;unicode-bidi:isolate}
+.links{display:flex;justify-content:center;gap:18px}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,20px);background:var(--deep);color:#fff;padding:10px 16px;border-radius:14px;font-size:13.5px;max-width:calc(100% - 32px);width:max-content;text-align:center;opacity:0;pointer-events:none;transition:.25s;z-index:50;box-shadow:var(--shadow)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
 </style>
 </head>
 <body>
@@ -312,6 +323,14 @@ function whenText(n,inMsg){
   return `بعد ${ar(n)} يومًا`;
 }
 
+/* مسار التصميم: رقم الفسح ← designs/رقم.jpg */
+function imgPath(v){
+  const s=lat(String(v??"").trim());
+  if(!s)return "";
+  if(/\.(jpe?g|png|webp)$/i.test(s))return s.includes("/")?s:"designs/"+s;
+  return "designs/"+s+".jpg";
+}
+
 /* قراءة المحاضرات */
 const raw=window.المحاضرات;
 const msgs=(window.الرسائل&&typeof window.الرسائل.قبل==="string"&&typeof window.الرسائل.يوم==="string")?window.الرسائل:fallbackMessages;
@@ -338,7 +357,8 @@ if(!Array.isArray(raw)){
       time:timeText(L.الوقت),
       speaker:String(L.الداعية||"").trim(),
       title:String(L.العنوان||"").trim(),
-      note:String(L.ملاحظة||"").trim()};
+      note:String(L.ملاحظة||"").trim(),
+      img:imgPath(L.الصورة)};
     lectures.push(lec);m.lectures.push(lec);
   });
 }
@@ -360,12 +380,32 @@ function buildMessage(lec,type){
 }
 const waLink=(phone,text)=>`https://wa.me/966${phone.replace(/^0/,"")}`+(text?`?text=${encodeURIComponent(text)}`:"");
 
+/* تحميل التصميم مسبقًا عشان المشاركة تفتح فورًا */
+const imgCache=new Map();
+function loadImg(url){
+  if(!imgCache.has(url)){
+    const rec={file:null,failed:false};
+    rec.p=fetch(url,{cache:"no-cache"}).then(r=>{if(!r.ok)throw 0;return r.blob();})
+      .then(b=>{rec.file=new File([b],url.split("/").pop(),{type:b.type||"image/jpeg"});return rec.file;})
+      .catch(()=>{rec.failed=true;return null;});
+    imgCache.set(url,rec);
+  }
+  return imgCache.get(url);
+}
+function toast(t){
+  let el=document.getElementById("toast");
+  if(!el){el=document.createElement("div");el.id="toast";el.className="toast";document.body.appendChild(el);}
+  el.textContent=t;el.classList.add("show");clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove("show"),4200);
+}
+function copyText(t){try{return navigator.clipboard?navigator.clipboard.writeText(t).then(()=>true,()=>false):Promise.resolve(false);}catch(e){return Promise.resolve(false);}}
+
 /* الحالة */
 const state={tab:"lec",hood:"الكل",q:""};
 const hoods=order.filter(h=>h&&mosques.some(m=>m.hood===h)).concat([...new Set(mosques.map(m=>m.hood))].filter(h=>h&&!order.includes(h)));
 const $=id=>document.getElementById(id);
 const archSvg=`<svg viewBox="0 0 34 40" aria-hidden="true"><path d="M1 40V17C1 9 9 4 17 1C25 4 33 9 33 17V40Z" fill="#F3E8EF"/></svg>`;
 const chev=`<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>`;
+const imgIcon=`<svg class="hasimg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-label="فيه تصميم"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-9 9"/></svg>`;
 const arch=n=>`<span class="arch">${archSvg}<span>${ar(n)}</span></span>`;
 
 /* الشارات */
@@ -404,7 +444,7 @@ function render(){
           <span class="meta title" style="display:block">${l.title?esc(l.title):"<span style='color:var(--muted)'>العنوان لم يُحدد</span>"}</span>
           <span class="spk">${l.speaker?esc(l.speaker):"<span style='color:var(--muted)'>الداعية لم تُحدد</span>"}${l.m.contacts.length?"":" · <span class='nonum'>بدون رقم</span>"}</span>
           ${l.note?`<span class="note">${esc(l.note)}</span>`:""}</span>
-        <span class="time">${esc(l.time.short)}</span>${chev}</button>`).join("")}</div></section>`).join("");
+        <span class="tcol"><span class="time">${esc(l.time.short)}</span>${l.img?imgIcon:""}</span>${chev}</button>`).join("")}</div></section>`).join("");
     if(!list.length)html+=`<p class="empty">${state.q?"ما فيه نتائج للبحث.":"لا توجد محاضرات قادمة."}</p>`;
   }else{
     const sections=(state.hood==="الكل"?hoods.concat(mosques.some(m=>!m.hood)?[""]:[]):[state.hood]).map(h=>({h,items:mosques.filter(m=>m.hood===h&&(matches(mosqueText(m))||m.lectures.some(l=>matches(l.speaker+" "+l.title))))})).filter(s=>s.items.length);
@@ -456,8 +496,21 @@ function drawSheet(){
     ${lec.note?`<dt>ملاحظة</dt><dd><span class="note" style="margin:0">${esc(lec.note)}</span></dd>`:""}</dl></div>`;
   h+=`<div class="seg" data-k="type"><button data-v="قبل" aria-pressed="${S.type==="قبل"}" ${lec.days===0?"disabled":""}>تذكير قبل المحاضرة</button><button data-v="يوم" aria-pressed="${S.type==="يوم"}">تذكير يوم المحاضرة</button></div>`;
   const msg=buildMessage(lec,S.type);
+  const rec=lec.img?loadImg(lec.img):null;
+  const hasImg=rec&&!rec.failed;
+  if(hasImg){
+    h+=`<div class="label">التصميم</div><a class="design" href="${esc(lec.img)}" target="_blank" rel="noopener"><img src="${esc(lec.img)}" alt="تصميم المحاضرة" loading="eager" decoding="async"></a>`;
+    if(!rec.file)rec.p.then(()=>{if(S&&S.lec===lec&&rec.failed)drawSheet();});
+  }else if(rec&&rec.failed){
+    h+=`<div class="warn">التصميم ما انرفع: ملف ${esc(lec.img)} غير موجود في المستودع. تقدر ترسل النص الحين.</div>`;
+  }
   h+=`<div class="label">معاينة الرسالة</div><div class="preview">${esc(msg)}</div>`;
-  if(c){
+  if(c&&hasImg){
+    h+=`<button class="send" data-share>${waIcon}إرسال الصورة مع الرسالة</button>
+    <p class="hint">تنفتح قائمة المشاركة: اختر واتساب ثم محادثة <b>${esc(c.name||m.name)}</b> (<span class="num">${esc(c.phone)}</span>). الرسالة تنسخ تلقائيًا، وإذا ما طلعت مع الصورة الصقها في خانة التعليق.</p>
+    <a class="send alt" href="${waLink(c.phone,msg)}" target="_blank" rel="noopener">${waIcon}إرسال النص فقط إلى الرقم مباشرة</a>
+    <div class="links"><a class="plain" href="${waLink(c.phone)}" target="_blank" rel="noopener">فتح المحادثة بدون رسالة</a><a class="plain" href="${esc(lec.img)}" download>تحميل الصورة</a></div>`;
+  }else if(c){
     h+=`<a class="send" href="${waLink(c.phone,msg)}" target="_blank" rel="noopener">${waIcon}إرسال في الواتساب</a>
     <a class="plain" href="${waLink(c.phone)}" target="_blank" rel="noopener">فتح المحادثة بدون رسالة</a>`;
   }else{
@@ -476,6 +529,7 @@ sheet.addEventListener("click",e=>{
     (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>{b.textContent="تم النسخ ✓";},()=>{b.textContent="ما قدرت أنسخ، انسخها من المعاينة";});
     return;
   }
+  if(e.target.closest("[data-share]")){shareNow();return;}
   const b=e.target.closest("[data-v]");if(!b||b.disabled)return;
   const k=b.parentElement.dataset.k,v=b.dataset.v;
   if(k==="contact")S.contact=+v;
@@ -483,6 +537,28 @@ sheet.addEventListener("click",e=>{
   if(k==="lec"){S.lec=S.m.lectures.find(l=>l.i===+v);S.type=S.lec.days===0?"يوم":"قبل";}
   drawSheet();
 });
+function shareNow(){
+  const lec=S.lec,c=S.m.contacts[S.contact],msg=buildMessage(lec,S.type),rec=loadImg(lec.img);
+  copyText(msg);
+  const go=file=>{
+    if(file&&navigator.canShare&&navigator.canShare({files:[file]})){
+      navigator.share({files:[file],text:msg}).catch(err=>{if(err&&err.name!=="AbortError")toast("ما انفتحت المشاركة، جرّب مرة ثانية.");});
+      return true;
+    }
+    return false;
+  };
+  if(rec.file){
+    if(go(rec.file))return;
+    // متصفح ما يدعم مشاركة الصور (مثل الكمبيوتر): نزّل الصورة وافتح المحادثة بالنص
+    const a=document.createElement("a");a.href=lec.img;a.download=rec.file.name;document.body.appendChild(a);a.click();a.remove();
+    if(c)window.open(waLink(c.phone,msg),"_blank","noopener");
+    toast("الصورة نزلت على جهازك، أرفقها في المحادثة اللي انفتحت.");
+    return;
+  }
+  if(rec.failed){toast("التصميم غير موجود، أرسل النص فقط.");return;}
+  toast("جاري تجهيز الصورة… اضغط مرة ثانية بعد ثانية.");
+  rec.p.then(()=>{if(S)drawSheet();});
+}
 bd.addEventListener("click",closeSheet);
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&S)closeSheet();});
 $("view").addEventListener("click",e=>{
