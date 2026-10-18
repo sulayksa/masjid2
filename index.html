@@ -131,6 +131,10 @@ button.send{border:0;cursor:pointer;font-family:inherit}
 .hint{font-size:12.5px;color:var(--muted);text-align:center;margin-top:8px;line-height:1.7}
 .hint .num{direction:ltr;unicode-bidi:isolate}
 .links{display:flex;justify-content:center;gap:18px}
+.done{display:block;font-size:12.5px;color:#1B8A4A;margin-top:3px;font-weight:500}
+.log{margin-top:10px;background:#EAF6EF;border-radius:14px;padding:10px 14px;font-size:13.5px;color:#1B7A43;line-height:1.9}
+.log span{color:var(--muted);font-size:12.5px}
+.clearlog{display:block;margin-top:4px;font-size:12px;color:var(--muted);text-decoration:underline}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,20px);background:var(--deep);color:#fff;padding:10px 16px;border-radius:14px;font-size:13.5px;max-width:calc(100% - 32px);width:max-content;text-align:center;opacity:0;pointer-events:none;transition:.25s;z-index:50;box-shadow:var(--shadow)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 </style>
@@ -370,6 +374,35 @@ function buildMessage(lec,type){
 }
 const waLink=(phone,text)=>`https://wa.me/966${phone.replace(/^0/,"")}`+(text?`?text=${encodeURIComponent(text)}`:"");
 
+/* سجل التذكير: يُحفظ في متصفح هذا الجهاز فقط */
+const LOGKEY="muhadarat-reminders-v1";
+const lecKey=l=>l.m.name+"|"+l.hfull;
+function getLog(){try{return JSON.parse(localStorage.getItem(LOGKEY)||"{}")||{};}catch(e){return {};}}
+function saveLog(x){try{localStorage.setItem(LOGKEY,JSON.stringify(x));}catch(e){}}
+let LOG=getLog();
+const KINDS={both:"صورة ورسالة",img:"صورة",text:"رسالة"};
+function record(l,kind){
+  const k=lecKey(l);(LOG[k]=LOG[k]||[]).push({d:today,k:kind,at:Date.now()});saveLog(LOG);
+  render();if(S&&S.lec===l)drawSheet();
+}
+function whenSent(l,r){
+  const n=Math.round((l.t-r.d)/DAY);
+  if(n<=0)return "يوم المحاضرة";
+  if(n===1)return "قبلها بيوم";
+  if(n===2)return "قبلها بيومين";
+  if(n<=10)return `قبلها بـ${ar(n)} أيام`;
+  return `قبلها بـ${ar(n)} يومًا`;
+}
+function doneLine(l){
+  const rs=LOG[lecKey(l)];if(!rs||!rs.length)return "";
+  const parts=[...new Set(rs.map(r=>whenSent(l,r)))];
+  return `<span class="done">✓ تم التذكير ${parts.join(" · ")}</span>`;
+}
+function hDate(t){
+  const p={};new Intl.DateTimeFormat("en-u-ca-islamic-umalqura-nu-latn",{timeZone:"UTC",day:"numeric",month:"numeric"}).formatToParts(new Date(t)).forEach(x=>p[x.type]=x.value);
+  return `${WDAYS[new Date(t).getUTCDay()]} ${ar(+p.day)} ${HMONTHS[+p.month-1]}`;
+}
+
 /* تحميل التصميم مسبقًا عشان المشاركة تفتح فورًا */
 const imgCache=new Map();
 function loadImg(url){
@@ -434,7 +467,7 @@ function render(){
         <span class="main"><span class="name">${esc(l.m.name)}</span>
           <span class="meta title" style="display:block">${l.title?esc(l.title):"<span style='color:var(--muted)'>العنوان لم يُحدد</span>"}</span>
           <span class="spk">${l.speaker?esc(l.speaker):"<span style='color:var(--muted)'>الداعية لم تُحدد</span>"}${l.m.contacts.length?"":" · <span class='nonum'>بدون رقم</span>"}</span>
-          ${l.note?`<span class="note">${esc(l.note)}</span>`:""}</span>
+          ${l.note?`<span class="note">${esc(l.note)}</span>`:""}${doneLine(l)}</span>
         <span class="tcol"><span class="time">${esc(l.time.short)}</span>${l.img?imgIcon:""}</span>${chev}</button>`).join("")}</div></section>`).join("");
     if(!list.length)html+=`<p class="empty">${state.q?"ما فيه نتائج للبحث.":"لا توجد محاضرات قادمة."}</p>`;
   }else{
@@ -443,7 +476,7 @@ function render(){
       <div class="list">${s.items.map(m=>{const nx=m.lectures[0];return `<button class="mrow" data-m="${m.n}">${arch(m.n)}
         <span class="main"><span class="name" style="display:block">${esc(m.name)}</span>
         ${m.contacts.length?m.contacts.map(c=>`<span class="contact">${c.role?`<span>${esc(c.role)}</span>`:""}${c.name?`<span>${esc(c.name)}</span>`:""}<span class="num">${esc(c.phone)}</span></span>`).join(""):`<span class="nonum">لا يوجد رقم تواصل</span>`}
-        <span class="nextb ${nx?(nx.days===0?"today":""):"none"}">${nx?(nx.days===0?"المحاضرة القادمة اليوم":"المحاضرة القادمة "+whenText(nx.days)):"لا توجد محاضرات قادمة"}</span></span></button>`;}).join("")}</div></section>`).join("");
+        <span class="nextb ${nx?(nx.days===0?"today":""):"none"}">${nx?(nx.days===0?"المحاضرة القادمة اليوم":"المحاضرة القادمة "+whenText(nx.days)):"لا توجد محاضرات قادمة"}</span>${nx?doneLine(nx):""}</span></button>`;}).join("")}</div></section>`).join("");
     if(!sections.length)html+=`<p class="empty">ما فيه نتائج للبحث.</p>`;
   }
   v.innerHTML=html;
@@ -485,6 +518,8 @@ function drawSheet(){
     <dt>الداعية</dt><dd>${lec.speaker?esc(lec.speaker):"<span style='color:var(--muted)'>لم تُحدد</span>"}</dd>
     <dt>الوقت</dt><dd>${esc(lec.time.long)}</dd>
     ${lec.note?`<dt>ملاحظة</dt><dd><span class="note" style="margin:0">${esc(lec.note)}</span></dd>`:""}</dl></div>`;
+  const logs=LOG[lecKey(lec)]||[];
+  if(logs.length)h+=`<div class="log">${logs.map(r=>`<div>✓ تم التذكير ${whenSent(lec,r)} <span>(${KINDS[r.k]||""} · ${hDate(r.d)})</span></div>`).join("")}<button class="clearlog" data-clear>مسح السجل</button></div>`;
   if(msgs.قبل!==msgs.يوم)h+=`<div class="seg" data-k="type"><button data-v="قبل" aria-pressed="${S.type==="قبل"}" ${lec.days===0?"disabled":""}>تذكير قبل المحاضرة</button><button data-v="يوم" aria-pressed="${S.type==="يوم"}">تذكير يوم المحاضرة</button></div>`;
   const msg=buildMessage(lec,S.type);
   const rec=lec.img?loadImg(lec.img):null;
@@ -499,10 +534,11 @@ function drawSheet(){
   if(c&&hasImg){
     h+=`<button class="send" data-share="both">${waIcon}إرسال الصورة مع الرسالة</button>
     <button class="send alt" data-share="img">${imgIconBtn}إرسال الصورة فقط</button>
-    <p class="hint">تنفتح قائمة المشاركة: اختر واتساب ثم محادثة <b>${esc(c.name||m.name)}</b> (<span class="num">${esc(c.phone)}</span>).</p>
+    <p class="hint">الزرّين فوق يفتحون قائمة المشاركة: اختر واتساب ثم محادثة <b>${esc(c.name||m.name)}</b> (<span class="num">${esc(c.phone)}</span>).</p>
+    <a class="send alt" href="${waLink(c.phone,msg)}" target="_blank" rel="noopener" data-rec="text">${waIcon}إرسال الرسالة فقط</a>
     <a class="plain" href="${waLink(c.phone)}" target="_blank" rel="noopener">فتح المحادثة بدون رسالة</a>`;
   }else if(c){
-    h+=`<a class="send" href="${waLink(c.phone,msg)}" target="_blank" rel="noopener">${waIcon}إرسال في الواتساب</a>
+    h+=`<a class="send" href="${waLink(c.phone,msg)}" target="_blank" rel="noopener" data-rec="text">${waIcon}إرسال في الواتساب</a>
     <a class="plain" href="${waLink(c.phone)}" target="_blank" rel="noopener">فتح المحادثة بدون رسالة</a>`;
   }else{
     h+=`<div class="warn">لا يوجد رقم تواصل لهذا المسجد. أضف الرقم في قائمة المساجد داخل index.html، أو انسخ الرسالة وأرسلها يدويًا.</div>
@@ -520,6 +556,8 @@ sheet.addEventListener("click",e=>{
     (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>{b.textContent="تم النسخ ✓";},()=>{b.textContent="ما قدرت أنسخ، انسخها من المعاينة";});
     return;
   }
+  if(e.target.closest("[data-rec]")){record(S.lec,e.target.closest("[data-rec]").dataset.rec);return;}
+  if(e.target.closest("[data-clear]")){delete LOG[lecKey(S.lec)];saveLog(LOG);render();drawSheet();return;}
   const sh=e.target.closest("[data-share]");if(sh){shareNow(sh.dataset.share==="img");return;}
   const b=e.target.closest("[data-v]");if(!b||b.disabled)return;
   const k=b.parentElement.dataset.k,v=b.dataset.v;
@@ -533,7 +571,7 @@ function shareNow(imgOnly){
   if(!imgOnly)copyText(msg);
   const go=file=>{
     if(file&&navigator.canShare&&navigator.canShare({files:[file]})){
-      navigator.share(imgOnly?{files:[file]}:{files:[file],text:msg}).catch(err=>{if(err&&err.name!=="AbortError")toast("ما انفتحت المشاركة، جرّب مرة ثانية.");});
+      navigator.share(imgOnly?{files:[file]}:{files:[file],text:msg}).then(()=>record(lec,imgOnly?"img":"both")).catch(err=>{if(err&&err.name!=="AbortError")toast("ما انفتحت المشاركة، جرّب مرة ثانية.");});
       return true;
     }
     return false;
@@ -543,6 +581,7 @@ function shareNow(imgOnly){
     // متصفح ما يدعم مشاركة الصور (مثل الكمبيوتر): نزّل الصورة وافتح المحادثة بالنص
     const a=document.createElement("a");a.href=lec.img;a.download=rec.file.name;document.body.appendChild(a);a.click();a.remove();
     if(c)window.open(waLink(c.phone,imgOnly?"":msg),"_blank","noopener");
+    record(lec,imgOnly?"img":"both");
     toast("الصورة نزلت على جهازك، أرفقها في المحادثة اللي انفتحت.");
     return;
   }
